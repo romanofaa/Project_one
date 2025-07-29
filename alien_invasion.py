@@ -27,10 +27,18 @@ class AlienInvasion:
         while True:
             self._check_events()
             self.ship.update()
-            self.bullets.update() #???
+            self._update_bullets()
             self._update_screen()
             self.clock.tick(60)
-            self.bullets.update()
+
+    def _update_bullets(self):
+        """обновляет позиции снарядов и уничтожает старые"""
+        # обновление позиции снарядов
+        self.bullets.update()
+        # удаеление снарядов вышедших за край экрана
+        for bullet in self.bullets.copy():
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
 
     def _check_events(self):
         """обрабатывает нажатия клавиш и мыши"""
@@ -38,11 +46,11 @@ class AlienInvasion:
             if event.type == pygame.QUIT:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                self._check_keydown_evvents(event)
+                self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
 
-    def _check_keydown_evvents(self, event):
+    def _check_keydown_events(self, event):
         """реагирует на нажатие клавиш"""
         if event.key == pygame.K_RIGHT:
             self.ship.moving_right = True
@@ -59,10 +67,12 @@ class AlienInvasion:
             self.ship.moving_right = False
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = False
+
     def _fire_bullet(self):
         """создает снаряд и добавляет в группу bullets"""
-        new_bullet = Bullet(self)
-        self.bullets.add(new_bullet)
+        if len(self.bullets) < self.settings.bullet_allowed:
+            new_bullet = Bullet(self)
+            self.bullets.add(new_bullet)
 
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
